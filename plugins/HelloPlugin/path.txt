@@ -1,0 +1,1 @@
+ru.intervi.helloplugin.Main
