@@ -2,7 +2,7 @@
 
 Простая система плагинов, которая может быть как встроенной библиотекой, так и самостоятельным приложением.
 
-**[JavaDoc](https://intervi.github.io/jsplugins/)**
+**[JavaDoc](https://intervi.github.io/JSPlugins/)**
 
 ## Команды
 
