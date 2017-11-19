@@ -14,6 +14,9 @@ import ru.intervi.jsplugins.Main;
 import ru.intervi.jsplugins.api.InvalidPluginException;
 import ru.intervi.jsplugins.api.PluginListener;
 
+/**
+ * управление плагинами
+ */
 public class PluginManager {
 	public PluginManager() {
 		STANDALONE = false;
@@ -27,6 +30,16 @@ public class PluginManager {
 	private ConcurrentHashMap<String, String> cmdsMap = new ConcurrentHashMap<String, String>();
 	private final boolean STANDALONE;
 	
+	/**
+	 * загрузить плагин
+	 * @param path
+	 * @throws NullPointerException
+	 * @throws IOException
+	 * @throws InvalidPluginException
+	 * @throws ClassNotFoundException
+	 * @throws InstantiationException
+	 * @throws IllegalAccessException
+	 */
 	public void loadPlugin(File path) throws NullPointerException, IOException, InvalidPluginException, ClassNotFoundException, InstantiationException, IllegalAccessException {
 		if (!path.isFile()) throw new NullPointerException("not found: " + path.getAbsolutePath());
 		URLClassLoader loader = new URLClassLoader(new URL[] {path.toURI().toURL()});
@@ -47,20 +60,54 @@ public class PluginManager {
 		} finally {loader.close();}
 	}
 	
+	/**
+	 * загрузить плагин
+	 * @param path
+	 * @throws NullPointerException
+	 * @throws IOException
+	 * @throws InvalidPluginException
+	 * @throws ClassNotFoundException
+	 * @throws InstantiationException
+	 * @throws IllegalAccessException
+	 */
 	public void loadPlugin(String path) throws NullPointerException, IOException, InvalidPluginException, ClassNotFoundException, InstantiationException, IllegalAccessException {
 		loadPlugin(new File(path));
 	}
 	
+	/**
+	 * перезагрузить плагин
+	 * @param plugin
+	 * @throws NullPointerException
+	 * @throws ClassNotFoundException
+	 * @throws InstantiationException
+	 * @throws IllegalAccessException
+	 * @throws IOException
+	 * @throws InvalidPluginException
+	 */
 	public void reloadPlugin(PluginListener plugin) throws NullPointerException, ClassNotFoundException, InstantiationException, IllegalAccessException, IOException, InvalidPluginException {
 		File path = new File(plugin.getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
 		unloadPlugin(plugin);
 		loadPlugin(path);
 	}
 	
+	/**
+	 * перезагрузить плагин
+	 * @param name
+	 * @throws NullPointerException
+	 * @throws ClassNotFoundException
+	 * @throws InstantiationException
+	 * @throws IllegalAccessException
+	 * @throws IOException
+	 * @throws InvalidPluginException
+	 */
 	public void reloadPlugin(String name) throws NullPointerException, ClassNotFoundException, InstantiationException, IllegalAccessException, IOException, InvalidPluginException {
 		reloadPlugin(map.get(name));
 	}
 	
+	/**
+	 * выгрузить плагин
+	 * @param plugin
+	 */
 	public void unloadPlugin(PluginListener plugin) {
 		plugin.onUnload();
 		for (PluginListener p : map.values()) p.onUnloadPlugin(plugin);
@@ -69,50 +116,105 @@ public class PluginManager {
 		if (STANDALONE) Main.LOGGER.warning(plugin.getName() + " unloaded");
 	}
 	
+	/**
+	 * выгрузить плагин
+	 * @param name
+	 */
 	public void unloadPlugin(String name) {
 		unloadPlugin(map.get(name));
 	}
 	
+	/**
+	 * проверка плагина на валидность
+	 * @param path
+	 * @return
+	 */
 	public boolean isValidPlugin(File path) {
-		return true;
+		return true; //будет написано позже
 	}
 	
+	/**
+	 * проверка плагина на валидность
+	 * @param path
+	 * @return
+	 */
 	public boolean isValidPlugin(String path) {
 		return isValidPlugin(new File(path));
 	}
 	
+	/**
+	 * проверка, загружен ли плагин
+	 * @param plugin
+	 * @return true если да
+	 */
 	public boolean hasPlugin(PluginListener plugin) {
 		return map.containsValue(plugin);
 	}
 	
+	/**
+	 * проверка, загружен ли плагин
+	 * @param name
+	 * @return true если да
+	 */
 	public boolean hasPlugin(String name) {
 		return map.containsKey(name);
 	}
 	
+	/**
+	 * получить плагин по названию
+	 * @param name
+	 * @return
+	 */
 	public PluginListener getPluginFromName(String name) {
 		return map.get(name);
 	}
 	
+	/**
+	 * получить все плагины
+	 * @return
+	 */
 	public Collection<PluginListener> getPlugins() {
 		return map.values();
 	}
 	
+	/**
+	 * проверка, есть ли загруженные плагины
+	 * @return true если да
+	 */
 	public boolean isEmpty() {
 		return map.isEmpty();
 	}
 	
+	/**
+	 * количество загруженных плагинов
+	 * @return
+	 */
 	public int size() {
 		return map.size();
 	}
 	
+	/**
+	 * получить директорию с плагинами
+	 * @return
+	 */
 	public static File getPluginsFolder() {
 		return new File('.' + File.separatorChar + "plugins");
 	}
 	
+	/**
+	 * получить JAR-файл библиотеки
+	 * @return
+	 */
 	public File getJarPath() {
 		return new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
 	}
 	
+	/**
+	 * отправить команду
+	 * @param message команда
+	 * @param args аргументы
+	 * @return вывод пользователю
+	 */
 	public String sendCommand(String message, String[] args) {
 		return map.get(cmdsMap.get(message)).onCommand(message, args);
 	}

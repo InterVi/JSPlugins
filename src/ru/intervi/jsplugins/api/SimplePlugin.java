@@ -5,6 +5,9 @@ import java.util.Map;
 
 import ru.intervi.jsplugins.manager.PluginManager;
 
+/**
+ * класс-заглушка, чтобы не реализовывать не нужные методы
+ */
 public class SimplePlugin implements PluginListener {
 	public String getName() {
 		return "SimplePlugin";
