@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 
 import ru.intervi.jsplugins.Main;
@@ -39,8 +40,9 @@ public class PluginManager {
 	 * @throws ClassNotFoundException
 	 * @throws InstantiationException
 	 * @throws IllegalAccessException
+	 * @return загруженный плагин
 	 */
-	public void loadPlugin(File path) throws NullPointerException, IOException, InvalidPluginException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+	public PluginListener loadPlugin(File path) throws NullPointerException, IOException, InvalidPluginException, ClassNotFoundException, InstantiationException, IllegalAccessException {
 		if (!path.isFile()) throw new NullPointerException("not found: " + path.getAbsolutePath());
 		URLClassLoader loader = new URLClassLoader(new URL[] {path.toURI().toURL()});
 		try {
@@ -57,6 +59,7 @@ public class PluginManager {
 			if (plugin.getCommands() != null) for (String cmd : plugin.getCommands().values()) cmdsMap.put(cmd, plugin.getName());
 			for (PluginListener p : map.values()) p.onLoadedNewPlugin(plugin);
 			if (STANDALONE) Main.LOGGER.warning(plugin.getName() + " loaded");
+			return plugin;
 		} finally {loader.close();}
 	}
 	
@@ -69,9 +72,10 @@ public class PluginManager {
 	 * @throws ClassNotFoundException
 	 * @throws InstantiationException
 	 * @throws IllegalAccessException
+	 * @return загруженный плагин
 	 */
-	public void loadPlugin(String path) throws NullPointerException, IOException, InvalidPluginException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-		loadPlugin(new File(path));
+	public PluginListener loadPlugin(String path) throws NullPointerException, IOException, InvalidPluginException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+		return loadPlugin(new File(path));
 	}
 	
 	/**
@@ -83,11 +87,12 @@ public class PluginManager {
 	 * @throws IllegalAccessException
 	 * @throws IOException
 	 * @throws InvalidPluginException
+	 * @return перезагруженный плагин
 	 */
-	public void reloadPlugin(PluginListener plugin) throws NullPointerException, ClassNotFoundException, InstantiationException, IllegalAccessException, IOException, InvalidPluginException {
+	public PluginListener reloadPlugin(PluginListener plugin) throws NullPointerException, ClassNotFoundException, InstantiationException, IllegalAccessException, IOException, InvalidPluginException {
 		File path = new File(plugin.getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
 		unloadPlugin(plugin);
-		loadPlugin(path);
+		return loadPlugin(path);
 	}
 	
 	/**
@@ -99,9 +104,10 @@ public class PluginManager {
 	 * @throws IllegalAccessException
 	 * @throws IOException
 	 * @throws InvalidPluginException
+	 * @return перезагруженный плагин
 	 */
-	public void reloadPlugin(String name) throws NullPointerException, ClassNotFoundException, InstantiationException, IllegalAccessException, IOException, InvalidPluginException {
-		reloadPlugin(map.get(name));
+	public PluginListener reloadPlugin(String name) throws NullPointerException, ClassNotFoundException, InstantiationException, IllegalAccessException, IOException, InvalidPluginException {
+		return reloadPlugin(map.get(name));
 	}
 	
 	/**
@@ -174,7 +180,7 @@ public class PluginManager {
 	 * @return
 	 */
 	public Collection<PluginListener> getPlugins() {
-		return map.values();
+		return Collections.unmodifiableCollection(map.values());
 	}
 	
 	/**
